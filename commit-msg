@@ -1,0 +1,28 @@
+#!/usr/bin/env perl
+my $file = shift;
+
+if (`git symbolic-ref HEAD` =~ /trivial-/) {
+    exit 0;
+}
+
+(my @projects = split /\n/, `git config --get-all ii.project`)
+    or die "Please set an ii.project like so:\n\n    git config --add ii.project IITOOLS\n\n(note: you can do this multiple times)\n";
+
+my $project_re = join '|', @projects;
+my $re = qr/($project_re)-\d+/i;
+
+open my $handle, '<', $file or die "git error? $!";
+my $first_line = <$handle>;
+
+if ($first_line =~ $re) {
+    exit 0; # OK!
+}
+elsif ($first_line =~ /^Merge /) {
+    exit 0; # merges don't need a ticket number
+}
+elsif ($first_line =~ /^\s*$/) {
+    exit 0; # let git generate the "Aborted" message
+}
+else {
+    die "\e[1;31m*\n*\n*\nAborted! Your commit message's first line must reference a ticket " . join (' or ', map { "$_-###" } @projects) . " \n";
+}

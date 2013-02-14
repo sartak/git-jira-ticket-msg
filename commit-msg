@@ -20,6 +20,9 @@ if ($first_line =~ $re) {
 elsif ($first_line =~ /^Merge /) {
     exit 0; # merges don't need a ticket number
 }
+elsif ($first_line =~ /\bWIP\b/) {
+    exit 0; # commit will be rewritten later
+}
 elsif ($first_line =~ /^\s*$/) {
     exit 0; # let git generate the "Aborted" message
 }
